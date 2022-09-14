@@ -1,0 +1,28 @@
+from django.db import models
+import string
+import random
+
+# Modelo de base de datos aca:
+# Create your models here.
+
+# Genera un numero aleatoreo para pasarle a code
+def generate_unique_code():
+    lenght = 8
+    while True:
+        code = ''.join(random.choices(string.ascii_uppercase, k = lenght))
+        # Verificamos que el codigo no esta usado:
+        if Room.objects.filter(code=code).count() == 0:
+            break
+
+    return code
+
+
+
+class Room(models.Model):
+    code = models.CharField(max_length=10, default="", unique=True)
+    host = models.CharField(max_length=50, unique=True)
+    guest_can_pause = models.BooleanField(null=False, default=False)
+    votes_to_skip = models.IntegerField(null=False, default=1)
+    created_at = models.DateTimeField(auto_now_add=True) # Crea automaticamente una Date
+
+    # Podemos crear funciones en el modelo
