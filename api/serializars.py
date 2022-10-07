@@ -1,20 +1,11 @@
 from dataclasses import field
 from rest_framework import serializers
-from .models import Room, Person, User, Vendedor
+from .models import Room, Person
+from .model.user import User
+from .model.vehiculo import Vehiculo
+from .model.comprador import Comprador
+from .model.vendedor import Vendedor
 
-class RoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
-        fields = '__all__'
-
-        # Deprecated:
-        #field = ('id', 'code', 'host', 'guest_can_pause',
-         #            'votes_to_skip', 'created_at')
-
-class PersonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Person
-        fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
