@@ -17,4 +17,9 @@ class VendedorSerializer(serializers.ModelSerializer):
         model = Vendedor
         fields = '__all__'
 
+class CompradorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comprador
+        fields = '__all__'
+
         

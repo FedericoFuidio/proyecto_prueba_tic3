@@ -9,4 +9,4 @@ class Vehiculo(models.Model):
     marca = models.CharField(max_length=100, default="")
     matricula = models.CharField(max_length=100, default="", unique=True)
     precio_base = models.IntegerField()
-    vendedor = models.ForeignKey(Vendedor, on_delete=models.CASCADE)
+    # vendedor = models.ForeignKey(Vendedor, on_delete=models.CASCADE)
