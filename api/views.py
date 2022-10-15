@@ -2,7 +2,7 @@ from email.policy import default
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
-from .serializars import CompradorSerializer, UserSerializer, VendedorSerializer
+from .serializars import CompradorSerializer, UserSerializer, VehiculoSerializer, VendedorSerializer
 from .models import Room, Person
 from .model.user import User
 from .model.comprador import Comprador
@@ -14,6 +14,8 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 from django.contrib.auth import get_user
 import json
+
+import base64 #Transferencia de imagenes
 
 
 # Create your views here.
@@ -128,3 +130,33 @@ class CompradorView(generics.CreateAPIView):
             return JsonResponse({'result':'false'})
         except:
             return JsonResponse({'result':'false'})
+
+class VehiculoView(generics.CreateAPIView):
+    queryset = Vehiculo.objects.all()
+    serializer_class = VehiculoSerializer
+
+    def get(self, request):
+
+        # En principio devolvemos todos los vehiculos:
+
+        vehiculo = Vehiculo.objects.filter()
+        serializer = VehiculoSerializer(vehiculo, many=True)
+        data = json.loads(json.dumps(serializer.data))
+        try:
+            data = json.loads(json.dumps(serializer.data)) # Json de todos los vehiculos
+        except:
+            return JsonResponse({'result':'error'})
+
+        for i in data:
+            try:
+                # Encode image with base64
+                with open(i['image'][1:], "rb") as image_file:
+                    image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                
+                i['image'] = image_data
+                
+            except:
+                JsonResponse({'result':'error', 'vehiculo':'error'})
+            
+        return JsonResponse({"result":"ok", "vehiculo":data})
+        

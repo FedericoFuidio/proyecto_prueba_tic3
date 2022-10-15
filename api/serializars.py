@@ -22,4 +22,9 @@ class CompradorSerializer(serializers.ModelSerializer):
         model = Comprador
         fields = '__all__'
 
+class VehiculoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehiculo
+        fields = '__all__'
+
         
