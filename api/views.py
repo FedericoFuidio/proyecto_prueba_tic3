@@ -2,12 +2,13 @@ from email.policy import default
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
-from .serializars import CompradorSerializer, UserSerializer, VehiculoSerializer, VendedorSerializer
+from .serializars import CompradorSerializer, LikeSerializer, UserSerializer, VehiculoSerializer, VendedorSerializer
 from .models import Room, Person
 from .model.user import User
 from .model.comprador import Comprador
 from .model.vendedor import Vendedor
 from .model.vehiculo import Vehiculo
+from .model.like import Like
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
@@ -20,7 +21,8 @@ import base64 #Transferencia de imagenes
 
 # Create your views here.
 def request_to_json(request):
-    body = request.body
+    # body = request.body
+    body = json.dumps(request.GET)
     data = {}
     try:
         data = json.loads(body)
@@ -69,7 +71,7 @@ class UserView(generics.CreateAPIView):
     # Hace consulta por mail
     # Busca en la base de datos por el mail pasado, y luego compara las passwords
     def get(self, request, **args):
-        json_request = request_to_json(request)
+        json_request = request_to_json(request) #Parametros en el metodo get
         try:
             keys = json_request.keys()
         except:
@@ -95,10 +97,11 @@ class VendedorView(generics.CreateAPIView):
     queryset = Vendedor.objects.all()
     serializer_class = VendedorSerializer
 
+    #Cambiar request data por params (request.get)
     def get(self, request):
-        id = request.data.get('id', default = None)
 
         try:
+            id = request.data.get('id', default = None)
             vendedor = Vendedor.objects.filter(id = id).values() # Filtra por el id pasado
         except:
             return JsonResponse({'result':'invalid request'})
@@ -116,10 +119,11 @@ class CompradorView(generics.CreateAPIView):
     serializer_class = CompradorSerializer
 
     # Verificamos que un id es comprador:
+    # Cambiar request data por request params (request.get)
     def get(self, request):
-        id = request.data.get('id', default = None)
 
         try:
+            id = request.data.get('id', default = None)
             comprador = Comprador.objects.filter(id = id).values() # Filtra por el id pasado
         except:
             return JsonResponse({'result':'invalid request'})
@@ -135,10 +139,10 @@ class VehiculoView(generics.CreateAPIView):
     queryset = Vehiculo.objects.all()
     serializer_class = VehiculoSerializer
 
+    #Usar parameters (request.get)
     def get(self, request):
 
         # En principio devolvemos todos los vehiculos:
-
         vehiculo = Vehiculo.objects.filter()
         serializer = VehiculoSerializer(vehiculo, many=True)
         data = json.loads(json.dumps(serializer.data))
@@ -160,3 +164,9 @@ class VehiculoView(generics.CreateAPIView):
             
         return JsonResponse({"result":"ok", "vehiculo":data})
         
+class LikeView(generics.CreateAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+    # POST like: Recibe like y comprador
+
