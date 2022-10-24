@@ -75,23 +75,40 @@ class UserView(generics.CreateAPIView):
         try:
             keys = json_request.keys()
         except:
-            return JsonResponse({'result':'invalid', 'user':'user not exist'})
+            return JsonResponse({'result':'invalid', 'user':'el usuario no existe'})
         if('mail' in keys and 'password' in keys):
-            user = User.objects.filter(mail = json_request['mail'])
+            user = User.objects.filter(mail = json_request['mail'])  # filtro por mail
         else:
-            return JsonResponse({'result':'invalid', 'user':'user not exist'})
+            return JsonResponse({'result':'invalid', 'user':'el usuario no existe'})
         serializer = UserSerializer(user, many=True)
         try:
             data = json.loads(json.dumps(serializer.data))[0] # Primer (y unico) usuario devuelto
         except:
-            return JsonResponse({'result':'invalid', 'user':'user not exist'})
+            return JsonResponse({'result':'invalid', 'user':'el usuario no existe'})
         password = data['password']
         
-        if(password.__eq__(json_request['password'])):
+        if(password.__eq__(json_request['password'])): # chequeo de contraseña
             # Devolvemos username o password indistintamente. Lo necesario para poder buscar 
             # Al usuario en la base de datos luego de iniciar la sesion
             return JsonResponse({"result":"valid", "user":data['id']})
-        return JsonResponse({"result":"invalid", 'user':'invalid password'})
+        return JsonResponse({"result":"invalid", 'user':'contraseña incorrecta'})
+
+    # def post(self, request, **args):
+    #     json_request = request_to_json(request)
+    #     try:
+    #         keys = json_request.keys()
+    #     except:
+    #         return JsonResponse({'result':'invalid', 'user':'request error'})
+    #     if('mail' in keys and 'password' in keys and 'first_name' in keys and 'last_name' in keys):
+    #         serializer = UserSerializer(data = request.data)
+    #         if serializer.is_valid():
+    #             serializer.save()
+    #             return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     else:
+    #         return JsonResponse({'result':'invalid', 'user':'no existe el usuariots'})
+        
+
 
 class VendedorView(generics.CreateAPIView):
     queryset = Vendedor.objects.all()
@@ -151,7 +168,9 @@ class VehiculoView(generics.CreateAPIView):
         except:
             return JsonResponse({'result':'error'})
 
+        p=0
         for i in data:
+            p=+1
             try:
                 # Encode image with base64
                 with open(i['image'][1:], "rb") as image_file:
@@ -160,13 +179,34 @@ class VehiculoView(generics.CreateAPIView):
                 i['image'] = image_data
                 
             except:
-                JsonResponse({'result':'error', 'vehiculo':'error'})
+                JsonResponse({'result':'error', 'data':'error imagenes'})
             
-        return JsonResponse({"result":"ok", "vehiculo":data})
+        if p==0:
+            return JsonResponse({'result':'error', 'data':'no hay'})
+        return JsonResponse({'result':'ok', 'data':data})
         
 class LikeView(generics.CreateAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
+
+    # def get(self, request, **args):
+    #     json_request = request_to_json(request) #Parametros en el metodo get
+    #     try:
+    #         keys = json_request.keys()
+    #     except:
+    #         return JsonResponse({'result':'invalid', 'user':'error'})
+    #     if('id' in keys):
+    #         user = User.objects.filter(mail = json_request['mail'])  # filtro por mail
+    #     else:
+    #         return JsonResponse({'result':'invalid', 'user':'error'})
+    #     serializer = UserSerializer(user, many=True)
+    #     try:
+    #         data = json.loads(json.dumps(serializer.data))
+    #     except:
+    #         return JsonResponse({'result':'invalid', 'user':'error'})
+        
+    #     return JsonResponse({"result":"valid", "user":data['id']})
+    
 
     # POST like: Recibe like y comprador
 

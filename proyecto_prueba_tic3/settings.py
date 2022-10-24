@@ -90,9 +90,9 @@ DATABASES = {
        'ENGINE': 'django.db.backends.postgresql',
        'NAME': 'tic3db',
        'USER': 'postgres',
-       'PASSWORD': 'ffuidio',
+       'PASSWORD': 'postgres',
        'HOST': 'localhost',
-       'PORT': '5433',
+       'PORT': '5434',
     }
 }
 
