@@ -31,3 +31,6 @@ VALUES ( '101' ,  'Alquiler' ,  'BMW' ,  'Serie 3' ,  'XYZ 6789' ,  'USD 40,000'
 
 INSERT INTO api_vehiculo( vendedor_id ,  tipo ,  marca ,  modelo ,  matricula ,  precio_base )
 VALUES ( '1' ,  'Venta' ,  'Fiat' ,  'Uno' ,  'AAA 1111' ,  'USD 10,000' );
+
+INSERT INTO api_like( comprador_id, vehiculo_id )
+VALUES ( '101', '4');

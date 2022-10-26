@@ -4,7 +4,7 @@ from django.db import models
 from .vendedor import Vendedor
 
 class Vehiculo(models.Model):
-    vendedor = models.ForeignKey(Vendedor, on_delete=models.CASCADE)
+    vendedor = models.ForeignKey(Vendedor, on_delete=models.CASCADE, null=False)
     tipo_publicacion = models.TextChoices('tipo', 'Venta Alquiler')
     modelo = models.CharField(max_length=100, default="")
     tipo = models.CharField(blank=True, choices=tipo_publicacion.choices, max_length=10)

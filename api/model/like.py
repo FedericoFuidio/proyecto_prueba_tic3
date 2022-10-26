@@ -7,9 +7,9 @@ from .comprador import Comprador
 
 class Like(models.Model):
     # No es posible obtener el id del vehiculo, eventualmente se tendra que cambiar el modelo
-    comprador = models.ForeignKey(Comprador, on_delete=models.CASCADE, default="")
-    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE, default="")
-    fechahora = models.DateTimeField().auto_now_add
+    comprador = models.ForeignKey(Comprador, on_delete=models.CASCADE, null=False)
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE, null=False)
+    fechahora = models.DateTimeField(auto_now_add = True)
 
     class Meta:
         constraints = [
