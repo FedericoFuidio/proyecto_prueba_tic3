@@ -2,68 +2,32 @@ DROP DATABASE tic3db;
 
 CREATE DATABASE tic3db
     WITH 
-    OWNER = postgres
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'Spanish_Uruguay.1252'
-    LC_CTYPE = 'Spanish_Uruguay.1252'
+    OWNER = 'postgres'
+    ENCODING =  'UTF8' 
+    LC_COLLATE =  'Spanish_Uruguay.1252'
+    LC_CTYPE =  'Spanish_Uruguay.1252' 
     TABLESPACE = pg_default
     CONNECTION LIMIT = 10;
 
-CREATE TABLE usuarios (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(45) NOT NULL,
-    email VARCHAR(45) UNIQUE NOT NULL,
-);
+\c tic3db
 
-CREATE TABLE compradores (
-    usuario INT PRIMARY KEY,
+INSERT INTO api_user( id ,  first_name ,  last_name ,  mail ,  phone_number ,  password )
+VALUES ( '1' ,  'Marco' ,  'Zunino' ,  'mzunino@correo.um.edu.uy' ,  '091919919' ,  '123' );
 
-    FOREIGN KEY (usuario)
-        REFERENCES usuarios (id)
-);
+INSERT INTO api_user( id ,  first_name ,  last_name ,  mail ,  phone_number ,  password )
+VALUES ( '101' ,  'nombre1' ,  'apellido1' ,  'usuario1@gmail.com',  '099123456' ,  '123' );
 
-CREATE TABLE vendedores (
-    usuario INT PRIMARY KEY,
+INSERT INTO api_comprador( user_id )
+VALUES ( '1' );
 
-    FOREIGN KEY (usuario)
-        REFERENCES usuarios (id)
-);
+INSERT INTO api_vendedor( user_id )
+VALUES ( '101' );
 
-CREATE TABLE vehiculos (
-    id SERIAL PRIMARY KEY,
-    matricula VARCHAR(8) UNIQUE NOT NULL,
-    vendedor INT NOT NULL,
-    precio VARCHAR(20),
+INSERT INTO api_vehiculo( vendedor_id ,  tipo ,  marca ,  modelo ,  matricula ,  precio_base )
+VALUES ( '101' ,  'Venta' ,  'VW' ,  'Gol' ,  'ABC 1234' ,  'USD 30,000' );
 
-    FOREIGN KEY (vendedor)
-        REFERENCES vendedores (usuario)
-);
+INSERT INTO api_vehiculo( vendedor_id ,  tipo ,  marca ,  modelo ,  matricula ,  precio_base )
+VALUES ( '101' ,  'Alquiler' ,  'BMW' ,  'Serie 3' ,  'XYZ 6789' ,  'USD 40,000' );
 
-CREATE TABLE chats (
-    id SERIAL PRIMARY KEY,
-    calificacion INT,
-);
-
-CREATE TABLE likes (
-    comprador INT NOT NULL,
-    vehiculo INT NOT NULL,
-    chat INT UNIQUE,
-
-    PRIMARY KEY (comprador, vehiculo),
-    FOREIGN KEY (comprador)
-        REFERENCES compradores (usuario),
-    FOREIGN KEY (vehiculo)
-        REFERENCES vehiculos (id),
-    FOREIGN KEY (chat)
-        REFERENCES chats (id)
-);
-
-CREATE TABLE mensajes (
-    id SERIAL PRIMARY KEY,
-    chat INT NOT NULL,
-
-    FOREIGN KEY (chat)
-        REFERENCES chats (id)
-);
-
-
+INSERT INTO api_vehiculo( vendedor_id ,  tipo ,  marca ,  modelo ,  matricula ,  precio_base )
+VALUES ( '1' ,  'Venta' ,  'Fiat' ,  'Uno' ,  'AAA 1111' ,  'USD 10,000' );
