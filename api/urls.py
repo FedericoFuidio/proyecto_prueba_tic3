@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import VehiculoView, api_home, main, UserView, VendedorView, CompradorView, LikeView
+from .views import VehiculoView, api_home, main, UserView, VendedorView, CompradorView, LikeView, DislikeView
 
 urlpatterns = [
     path('home', api_home),
@@ -7,5 +7,6 @@ urlpatterns = [
     path('vendedor', VendedorView.as_view()),
     path('comprador', CompradorView.as_view()),
     path('vehiculo', VehiculoView.as_view()),
-    path('like', LikeView.as_view())
+    path('like', LikeView.as_view()),
+    path('dislike', DislikeView.as_view())
 ]

@@ -1,12 +1,13 @@
 from dataclasses import field
 from rest_framework import serializers
 
-from api.model.like import Like
 from .models import Room, Person
 from .model.user import User
 from .model.vehiculo import Vehiculo
 from .model.comprador import Comprador
 from .model.vendedor import Vendedor
+from .model.like import Like
+from .model.dislike import Dislike
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -32,6 +33,11 @@ class VehiculoSerializer(serializers.ModelSerializer):
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
+        fields = '__all__'
+
+class DislikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dislike
         fields = '__all__'
 
         
