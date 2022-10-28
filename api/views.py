@@ -189,25 +189,32 @@ class VehiculoView(generics.CreateAPIView):
 class LikeView(generics.CreateAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
-
+    
     def get(self, request):
         json_request = request_to_json(request) #Parametros en el metodo get
         try:
             keys = json_request.keys()
         except:
             return JsonResponse({'result':'invalid'})
-        if('id_comprador' in keys and 'id_vehiculo' in keys):
-            user = Like.objects.filter(comprador = json_request['id_comprador'], vehiculo = json_request['id_vehiculo'])  # filtro por mail
-        else:
-            return JsonResponse({'result':'invalid'})
-        serializer = LikeSerializer(user, many=True)
 
+        if(not ('comprador' in keys) and not ('vehiculo' in keys)):
+            return JsonResponse({'result':'invalid keys'})
+        if('comprador' in keys and not ('vehiculo' in keys)):
+            user = Like.objects.filter(comprador = json_request['comprador'])  # filtro por id comprador
+        if(not ('comprador' in keys) and 'vehiculo' in keys):
+            user = Like.objects.filter(vehiculo = json_request['vehiculo'])  # filtro por id vehiculo
+        if('comprador' in keys and 'vehiculo' in keys):
+            user = Like.objects.filter(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
+        
+        serializer = LikeSerializer(user, many=True)
         try:
-            data = json.loads(json.dumps(serializer.data))[0] # Primer (y unico) like devuelto
-            return JsonResponse({'result':'ok'})
+            data = json.loads(json.dumps(serializer.data))
+            return JsonResponse({'result':'ok', 'data': data})
         except:
             # json.loads dara una excepcion si no existe el like.
             return JsonResponse({'result':'invalid'})
+
+
 
     # def get(self, request, **args):
     #     json_request = request_to_json(request) #Parametros en el metodo get
@@ -241,15 +248,20 @@ class DislikeView(generics.CreateAPIView):
             keys = json_request.keys()
         except:
             return JsonResponse({'result':'invalid'})
-        if('id_comprador' in keys and 'id_vehiculo' in keys):
-            user = Dislike.objects.filter(comprador = json_request['id_comprador'], vehiculo = json_request['id_vehiculo'])  # filtro por mail
-        else:
-            return JsonResponse({'result':'invalid'})
-        serializer = DislikeSerializer(user, many=True)
 
+        if(not ('comprador' in keys) and not ('vehiculo' in keys)):
+            return JsonResponse({'result':'invalid keys'})
+        if('comprador' in keys and not ('vehiculo' in keys)):
+            user = Dislike.objects.filter(comprador = json_request['comprador'])  # filtro por id comprador
+        if(not ('comprador' in keys) and 'vehiculo' in keys):
+            user = Dislike.objects.filter(vehiculo = json_request['vehiculo'])  # filtro por id vehiculo
+        if('comprador' in keys and 'vehiculo' in keys):
+            user = Dislike.objects.filter(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
+        
+        serializer = DislikeSerializer(user, many=True)
         try:
-            data = json.loads(json.dumps(serializer.data))[0] # Primer (y unico) dislike devuelto
-            return JsonResponse({'result':'ok'})
+            data = json.loads(json.dumps(serializer.data))
+            return JsonResponse({'result':'ok', 'data': data})
         except:
             # json.loads dara una excepcion si no existe el like.
             return JsonResponse({'result':'invalid'})
