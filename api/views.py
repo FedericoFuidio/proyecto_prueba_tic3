@@ -3,7 +3,6 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
 from .serializars import CompradorSerializer, LikeSerializer, DislikeSerializer, UserSerializer, VehiculoSerializer, VendedorSerializer
-from .models import Room, Person
 from .model.user import User
 from .model.comprador import Comprador
 from .model.vendedor import Vendedor
@@ -160,12 +159,23 @@ class VehiculoView(generics.CreateAPIView):
     #Usar parameters (request.get)
     def get(self, request):
 
-        # En principio devolvemos todos los vehiculos:
-        vehiculo = Vehiculo.objects.filter()
-        serializer = VehiculoSerializer(vehiculo, many=True)
+        json_request = request_to_json(request) #Parametros en el metodo get
+        try:
+            keys = json_request.keys()
+
+        except:
+            return JsonResponse({'result':'invalid'})            
+
+        if('vendedor' in keys): #filtro por vendedor
+            item = Vehiculo.objects.filter(vendedor = json_request['vendedor'])
+        else:
+            # Por defecto devolvemos todos los vehiculos:
+            item = Vehiculo.objects.filter()
+
+        serializer = VehiculoSerializer(item, many=True)
         data = json.loads(json.dumps(serializer.data))
         try:
-            data = json.loads(json.dumps(serializer.data)) # Json de todos los vehiculos
+            data = json.loads(json.dumps(serializer.data))
         except:
             return JsonResponse({'result':'error'})
 
@@ -174,17 +184,18 @@ class VehiculoView(generics.CreateAPIView):
             p=+1
             try:
                 # Encode image with base64
-                with open(i['image'][1:], "rb") as image_file:
+                with open(i['imagen'][1:], "rb") as image_file:
                     image_data = base64.b64encode(image_file.read()).decode('utf-8')
-                
-                i['image'] = image_data
-                
+                    
+                i['imagen'] = image_data
+                    
             except:
                 JsonResponse({'result':'error', 'data':'error imagenes'})
-            
+                
         if p==0:
             return JsonResponse({'result':'error', 'data':'no hay'})
         return JsonResponse({'result':'ok', 'data':data})
+        
         
 class LikeView(generics.CreateAPIView):
     queryset = Like.objects.all()
@@ -200,13 +211,13 @@ class LikeView(generics.CreateAPIView):
         if(not ('comprador' in keys) and not ('vehiculo' in keys)):
             return JsonResponse({'result':'invalid keys'})
         if('comprador' in keys and not ('vehiculo' in keys)):
-            user = Like.objects.filter(comprador = json_request['comprador'])  # filtro por id comprador
+            item = Like.objects.filter(comprador = json_request['comprador'])  # filtro por id comprador
         if(not ('comprador' in keys) and 'vehiculo' in keys):
-            user = Like.objects.filter(vehiculo = json_request['vehiculo'])  # filtro por id vehiculo
+            item = Like.objects.filter(vehiculo = json_request['vehiculo'])  # filtro por id vehiculo
         if('comprador' in keys and 'vehiculo' in keys):
-            user = Like.objects.filter(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
+            item = Like.objects.filter(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
         
-        serializer = LikeSerializer(user, many=True)
+        serializer = LikeSerializer(item, many=True)
         try:
             data = json.loads(json.dumps(serializer.data))
             return JsonResponse({'result':'ok', 'data': data})
@@ -214,27 +225,26 @@ class LikeView(generics.CreateAPIView):
             # json.loads dara una excepcion si no existe el like.
             return JsonResponse({'result':'invalid'})
 
+    def delete(self, request):
+        json_request = request_to_json(request)
+        try:
+            keys = json_request.keys()
+        except:
+            return JsonResponse({'result':'invalid'})
+
+        if('comprador' in keys and 'vehiculo' in keys):
+            item = Like.objects.get(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
+            if item is not None:
+                item.delete()
+                return JsonResponse({'result':'ok'})
+            else:
+                return JsonResponse({'result':'like not exists'})
+        else:
+            return JsonResponse({'result':'invalid'})
 
 
-    # def get(self, request, **args):
-    #     json_request = request_to_json(request) #Parametros en el metodo get
-    #     try:
-    #         keys = json_request.keys()
-    #     except:
-    #         return JsonResponse({'result':'invalid', 'user':'error'})
-    #     if('id' in keys):
-    #         user = User.objects.filter(mail = json_request['mail'])  # filtro por mail
-    #     else:
-    #         return JsonResponse({'result':'invalid', 'user':'error'})
-    #     serializer = UserSerializer(user, many=True)
-    #     try:
-    #         data = json.loads(json.dumps(serializer.data))
-    #     except:
-    #         return JsonResponse({'result':'invalid', 'user':'error'})
-        
-    #     return JsonResponse({"result":"valid", "user":data['id']})
+
     
-
     # POST like: Recibe like y comprador
 
 
@@ -252,18 +262,35 @@ class DislikeView(generics.CreateAPIView):
         if(not ('comprador' in keys) and not ('vehiculo' in keys)):
             return JsonResponse({'result':'invalid keys'})
         if('comprador' in keys and not ('vehiculo' in keys)):
-            user = Dislike.objects.filter(comprador = json_request['comprador'])  # filtro por id comprador
+            item = Dislike.objects.filter(comprador = json_request['comprador'])  # filtro por id comprador
         if(not ('comprador' in keys) and 'vehiculo' in keys):
-            user = Dislike.objects.filter(vehiculo = json_request['vehiculo'])  # filtro por id vehiculo
+            item = Dislike.objects.filter(vehiculo = json_request['vehiculo'])  # filtro por id vehiculo
         if('comprador' in keys and 'vehiculo' in keys):
-            user = Dislike.objects.filter(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
+            item = Dislike.objects.filter(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
         
-        serializer = DislikeSerializer(user, many=True)
+        serializer = DislikeSerializer(item, many=True)
         try:
             data = json.loads(json.dumps(serializer.data))
             return JsonResponse({'result':'ok', 'data': data})
         except:
             # json.loads dara una excepcion si no existe el like.
+            return JsonResponse({'result':'invalid'})
+
+    def delete(self, request):
+        json_request = request_to_json(request)
+        try:
+            keys = json_request.keys()
+        except:
+            return JsonResponse({'result':'invalid'})
+            
+        if('comprador' in keys and 'vehiculo' in keys):
+            item = Dislike.objects.get(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
+            if item is not None:
+                item.delete()
+                return JsonResponse({'result':'ok'})
+            else:
+                return JsonResponse({'result':'dislike not exists'})
+        else:
             return JsonResponse({'result':'invalid'})
 
 
