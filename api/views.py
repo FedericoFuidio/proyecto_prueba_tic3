@@ -78,6 +78,8 @@ class UserView(generics.CreateAPIView):
             return JsonResponse({'result':'invalid', 'user':'el usuario no existe'})
         if('mail' in keys and 'password' in keys):
             user = User.objects.filter(mail = json_request['mail'])  # filtro por mail
+        elif('id' in keys):
+            user = User.objects.filter(id = json_request['id']) # filtro por id
         else:
             return JsonResponse({'result':'invalid', 'user':'el usuario no existe'})
         serializer = UserSerializer(user, many=True)
@@ -116,19 +118,34 @@ class VendedorView(generics.CreateAPIView):
 
     #Cambiar request data por params (request.get)
     def get(self, request):
-
+        json_request = request_to_json(request)
         try:
-            id = request.data.get('id', default = None)
-            vendedor = Vendedor.objects.filter(id = id).values() # Filtra por el id pasado
+            keys = json_request.keys()
         except:
             return JsonResponse({'result':'invalid request'})
 
-        try:
-            if(vendedor[0]['id_id'] != None): # Si la busqueda devuelve un resultado sin errores
-                return JsonResponse({'result':'true'})
+        if('id' in keys):
+            vendedor = Vendedor.objects.filter(user = json_request['id']) # Filtra por el id
+            # id = request.data.get('id', default = None)
+        else:
+            return JsonResponse({'result':'invalid request'})
+        
+        serializer = VendedorSerializer(vendedor, many=True)
+        data = json.loads(json.dumps(serializer.data)) # Primer (y unico) usuario devuelto
+
+        if(len(data) == 0):
             return JsonResponse({'result':'false'})
-        except:
-            return JsonResponse({'result':'false'})
+        else:
+            return JsonResponse({'result':'true'})
+        
+
+
+        # try:
+        #     if(vendedor[0]['id_id'] != None): # Si la busqueda devuelve un resultado sin errores
+        #         return JsonResponse({'result':'true'})
+        #     return JsonResponse({'result':'false'})
+        # except:
+        #     return JsonResponse({'result':'false'})
 
 
 class CompradorView(generics.CreateAPIView):
@@ -261,11 +278,11 @@ class DislikeView(generics.CreateAPIView):
 
         if(not ('comprador' in keys) and not ('vehiculo' in keys)):
             return JsonResponse({'result':'invalid keys'})
-        if('comprador' in keys and not ('vehiculo' in keys)):
+        elif('comprador' in keys and not ('vehiculo' in keys)):
             item = Dislike.objects.filter(comprador = json_request['comprador'])  # filtro por id comprador
-        if(not ('comprador' in keys) and 'vehiculo' in keys):
+        elif(not ('comprador' in keys) and 'vehiculo' in keys):
             item = Dislike.objects.filter(vehiculo = json_request['vehiculo'])  # filtro por id vehiculo
-        if('comprador' in keys and 'vehiculo' in keys):
+        elif('comprador' in keys and 'vehiculo' in keys):
             item = Dislike.objects.filter(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
         
         serializer = DislikeSerializer(item, many=True)
