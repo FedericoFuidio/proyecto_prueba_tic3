@@ -227,13 +227,35 @@ class LikeView(generics.CreateAPIView):
 
         if(not ('comprador' in keys) and not ('vehiculo' in keys)):
             return JsonResponse({'result':'invalid keys'})
-        if('comprador' in keys and not ('vehiculo' in keys)):
+        elif('comprador' in keys and not ('vehiculo' in keys)):
             item = Like.objects.filter(comprador = json_request['comprador'])  # filtro por id comprador
-        if(not ('comprador' in keys) and 'vehiculo' in keys):
+            if('info_completa' in keys):
+                serializer = LikeSerializer(item, many = True)
+                data = json.loads(json.dumps(serializer.data))
+                for i in data: #Recorremos todos los vehiculos:
+                    vehiculo = Vehiculo.objects.filter(id = i["vehiculo"])
+                    serializer_vehiculo = VehiculoSerializer(vehiculo, many = True)
+                    data_vehiculo = json.loads(json.dumps(serializer_vehiculo.data))
+                    with open(data_vehiculo[0]['imagen'][1:], "rb") as image_file:
+                        image_data = base64.b64encode(image_file.read()).decode('utf-8')
+
+                    data_vehiculo[0]["imagen"] = image_data
+                    i["data_vehiculo"] = data_vehiculo[0] # Sobreescribo vehiculo, se usa en initView
+
+                    user = User.objects.filter(id = data_vehiculo[0]["vendedor"])
+                    serializer_user= UserSerializer(user, many = True)
+                    data_user = json.loads(json.dumps(serializer_user.data))
+                    i["data_vendedor"] = data_user[0]
+                    # Buscamos tambien los datos del vendedor del vehiculo
+                return JsonResponse({'result':'ok', 'data': data})
+                
+        elif(not ('comprador' in keys) and 'vehiculo' in keys):
             item = Like.objects.filter(vehiculo = json_request['vehiculo'])  # filtro por id vehiculo
-        if('comprador' in keys and 'vehiculo' in keys):
+        elif('comprador' in keys and 'vehiculo' in keys):
             item = Like.objects.filter(comprador = json_request['comprador'], vehiculo = json_request['vehiculo'])  # filtro por vehiculo y comprador
         
+
+
         serializer = LikeSerializer(item, many=True)
         try:
             data = json.loads(json.dumps(serializer.data))
