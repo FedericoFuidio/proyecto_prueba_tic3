@@ -4,5 +4,6 @@ from .like import Like
 
 class Chat(models.Model):
     like = models.OneToOneField(Like, on_delete=models.CASCADE)
-    calif_vendedor = models.IntegerField()
-    calif_comprador = models.IntegerField()
+    fechahora = models.DateTimeField(auto_now_add = True)
+    calif_vendedor = models.IntegerField(null=True)
+    calif_comprador = models.IntegerField(null=True)

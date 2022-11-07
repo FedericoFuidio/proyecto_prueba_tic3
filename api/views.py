@@ -2,13 +2,14 @@ from email.policy import default
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
-from .serializars import CompradorSerializer, LikeSerializer, DislikeSerializer, UserSerializer, VehiculoSerializer, VendedorSerializer
+from .serializars import CompradorSerializer, LikeSerializer, DislikeSerializer, UserSerializer, VehiculoSerializer, VendedorSerializer, ChatSerializer
 from .model.user import User
 from .model.comprador import Comprador
 from .model.vendedor import Vendedor
 from .model.vehiculo import Vehiculo
 from .model.like import Like
 from .model.dislike import Dislike
+from .model.chat import Chat
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
@@ -236,8 +237,11 @@ class LikeView(generics.CreateAPIView):
                     vehiculo = Vehiculo.objects.filter(id = i["vehiculo"])
                     serializer_vehiculo = VehiculoSerializer(vehiculo, many = True)
                     data_vehiculo = json.loads(json.dumps(serializer_vehiculo.data))
-                    with open(data_vehiculo[0]['imagen'][1:], "rb") as image_file:
-                        image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                    try:
+                        with open(data_vehiculo[0]['imagen'][1:], "rb") as image_file:
+                            image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                    except:
+                        image_data = "" # no hay imagen  
 
                     data_vehiculo[0]["imagen"] = image_data
                     i["data_vehiculo"] = data_vehiculo[0] # Sobreescribo vehiculo, se usa en initView
@@ -248,7 +252,7 @@ class LikeView(generics.CreateAPIView):
                     i["data_vendedor"] = data_user[0]
                     # Buscamos tambien los datos del vendedor del vehiculo
                 return JsonResponse({'result':'ok', 'data': data})
-                
+
         elif(not ('comprador' in keys) and 'vehiculo' in keys):
             item = Like.objects.filter(vehiculo = json_request['vehiculo'])  # filtro por id vehiculo
         elif('comprador' in keys and 'vehiculo' in keys):
@@ -332,5 +336,66 @@ class DislikeView(generics.CreateAPIView):
         else:
             return JsonResponse({'result':'invalid'})
 
+class ChatView(generics.CreateAPIView):
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
+    
+    def get(self, request):
+        json_request = request_to_json(request) #Parametros en el metodo get
+        try:
+            keys = json_request.keys()
+        except:
+            return JsonResponse({'result':'invalid'})
 
+        if(not ('comprador' in keys)):
+            return JsonResponse({'result':'invalid keys'})
 
+        elif('info_completa' in keys):
+            item = Chat.objects.filter(like__comprador = json_request['comprador']) # filtrar si el like asociado es del comprador que se pide
+            serializer = ChatSerializer(item, many = True)
+            data_chat = json.loads(json.dumps(serializer.data))
+
+            for chat in data_chat: #Recorremos todos los chats:
+                like = Like.objects.filter(id = chat["like"])   # like asociado
+                serializer_like = LikeSerializer(like, many = True)
+                data_like = json.loads(json.dumps(serializer_like.data))[0]
+
+                vehiculo = Vehiculo.objects.filter(id = data_like["vehiculo"])   # vehiculo asociado
+                serializer_vehiculo = VehiculoSerializer(vehiculo, many = True)
+                data_vehiculo = json.loads(json.dumps(serializer_vehiculo.data))[0]
+
+                vendedor = User.objects.filter(id = data_vehiculo["vendedor"])   # vendedor asociado
+                serializer_vendedor = UserSerializer(vendedor, many = True)
+                data_vendedor = json.loads(json.dumps(serializer_vendedor.data))[0]
+                
+                try:
+                    with open(data_vehiculo[0]['imagen'][1:], "rb") as image_file:  # imagen del vehiculo
+                        image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                except:
+                    image_data = "" # no hay imagen
+                data_vehiculo["imagen"] = image_data
+
+                chat["vehiculo"] = data_vehiculo    # cargar datos de vehiculo en el json
+                chat["vendedor"] = data_vendedor    # cargar datos de vendedor en el json
+
+                # incluir lista de mensajes ?
+
+                # data_chat :
+                #   chat {                    
+                #       like
+                #       fechahora
+                #       calif_vendedor
+                #       calif_comprador
+                #       vehiculo {
+                #           campos de vehiculo
+                #           imagen
+                #       }
+                #       vendedor {
+                #           campos de vendedor
+                #       }
+                #   }
+                
+            return JsonResponse({'result':'ok', 'data': data_chat})
+
+        else:
+            return JsonResponse({'result':'invalid'})

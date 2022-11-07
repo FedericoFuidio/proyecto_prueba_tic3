@@ -8,6 +8,7 @@ from .model.comprador import Comprador
 from .model.vendedor import Vendedor
 from .model.like import Like
 from .model.dislike import Dislike
+from .model.chat import Chat
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,4 +41,8 @@ class DislikeSerializer(serializers.ModelSerializer):
         model = Dislike
         fields = '__all__'
 
+class ChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Chat
+        fields = '__all__'
         
