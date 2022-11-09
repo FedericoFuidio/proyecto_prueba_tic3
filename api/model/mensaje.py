@@ -7,4 +7,4 @@ class Mensaje(models.Model):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, null=False)
     fechahora = models.DateTimeField(auto_now_add = True)
     contenido = models.CharField(blank = False, max_length = 100)
-    enviado_por = models.CharField(choices = emisor.choices, blank = False)
+    enviado_por = models.CharField(choices = emisor.choices, blank = False, max_length = 10)

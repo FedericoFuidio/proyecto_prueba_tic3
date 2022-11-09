@@ -2,7 +2,7 @@ from email.policy import default
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
-from .serializars import CompradorSerializer, LikeSerializer, DislikeSerializer, UserSerializer, VehiculoSerializer, VendedorSerializer, ChatSerializer
+from .serializars import CompradorSerializer, LikeSerializer, DislikeSerializer, UserSerializer, VehiculoSerializer, VendedorSerializer, ChatSerializer, MensajeSerializer
 from .model.user import User
 from .model.comprador import Comprador
 from .model.vendedor import Vendedor
@@ -10,6 +10,7 @@ from .model.vehiculo import Vehiculo
 from .model.like import Like
 from .model.dislike import Dislike
 from .model.chat import Chat
+from .model.mensaje import Mensaje
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
@@ -399,3 +400,24 @@ class ChatView(generics.CreateAPIView):
 
         else:
             return JsonResponse({'result':'invalid'})
+
+class MensajeView(generics.CreateAPIView):
+    queryset = Mensaje.objects.all()
+    serializer_class = MensajeSerializer
+    
+    def get(self, request):
+        json_request = request_to_json(request) #Parametros en el metodo get
+        try:
+            keys = json_request.keys()
+        except:
+            return JsonResponse({'result':'invalid'})
+
+        if(not ('chat_id' in keys)):
+            return JsonResponse({'result':'invalid keys'})
+        else:
+            item = Mensaje.objects.filter(chat = json_request['chat_id']) # filtrar si el like asociado es del comprador que se pide
+            serializer = MensajeSerializer(item, many = True)
+            data_mensajes = json.loads(json.dumps(serializer.data))
+    
+            return JsonResponse({'result':'ok', 'data': data_mensajes})
+

@@ -9,6 +9,7 @@ from .model.vendedor import Vendedor
 from .model.like import Like
 from .model.dislike import Dislike
 from .model.chat import Chat
+from .model.mensaje import Mensaje
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -44,5 +45,10 @@ class DislikeSerializer(serializers.ModelSerializer):
 class ChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat
+        fields = '__all__'
+
+class MensajeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mensaje
         fields = '__all__'
         
