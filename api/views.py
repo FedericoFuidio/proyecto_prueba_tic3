@@ -348,10 +348,17 @@ class ChatView(generics.CreateAPIView):
         except:
             return JsonResponse({'result':'invalid'})
 
-        if(not ('comprador' in keys)):
-            return JsonResponse({'result':'invalid keys'})
+        if('like' in keys):
+            item = Chat.objects.filter(like = json_request['like']) # filtrar si el like asociado es del comprador que se pide
+            serializer = ChatSerializer(item, many = True)
+            data_chat = json.loads(json.dumps(serializer.data))
+            if len(data_chat) == 0:
+                return JsonResponse({'result':'false'})
+            else:
+                return JsonResponse({'result':'true', 'data': data_chat[0]})
+            
 
-        elif('info_completa' in keys):
+        elif('comprador' in keys and 'info_completa' in keys):
             item = Chat.objects.filter(like__comprador = json_request['comprador']) # filtrar si el like asociado es del comprador que se pide
             serializer = ChatSerializer(item, many = True)
             data_chat = json.loads(json.dumps(serializer.data))
@@ -398,6 +405,52 @@ class ChatView(generics.CreateAPIView):
                 
             return JsonResponse({'result':'ok', 'data': data_chat})
 
+        elif('vendedor' in keys and 'info_completa' in keys):
+            item = Chat.objects.filter(like__vehiculo__vendedor = json_request['vendedor']) # filtrar si el like asociado es del comprador que se pide
+            serializer = ChatSerializer(item, many = True)
+            data_chat = json.loads(json.dumps(serializer.data))
+
+            for chat in data_chat: #Recorremos todos los chats:
+                like = Like.objects.filter(id = chat["like"])   # like asociado
+                serializer_like = LikeSerializer(like, many = True)
+                data_like = json.loads(json.dumps(serializer_like.data))[0]
+
+                vehiculo = Vehiculo.objects.filter(id = data_like["vehiculo"])   # vehiculo asociado
+                serializer_vehiculo = VehiculoSerializer(vehiculo, many = True)
+                data_vehiculo = json.loads(json.dumps(serializer_vehiculo.data))[0]
+
+                comprador = User.objects.filter(id = data_like["comprador"])   # comprador asociado al like
+                serializer_comprador = UserSerializer(comprador, many = True)
+                data_comprador = json.loads(json.dumps(serializer_comprador.data))[0]
+                
+                try:
+                    with open(data_vehiculo[0]['imagen'][1:], "rb") as image_file:  # imagen del vehiculo
+                        image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                except:
+                    image_data = "" # no hay imagen
+                data_vehiculo["imagen"] = image_data
+
+                chat["vehiculo"] = data_vehiculo    # cargar datos de vehiculo en el json
+                chat["comprador"] = data_comprador    # cargar datos de vendedor en el json
+
+
+                # data_chat :
+                #   chat {                    
+                #       like
+                #       fechahora
+                #       calif_vendedor
+                #       calif_comprador
+                #       vehiculo {
+                #           campos de vehiculo
+                #           imagen
+                #       }
+                #       comprador {
+                #           campos de comprador
+                #       }
+                #   }
+                
+            return JsonResponse({'result':'ok', 'data': data_chat})
+
         else:
             return JsonResponse({'result':'invalid'})
 
@@ -412,10 +465,10 @@ class MensajeView(generics.CreateAPIView):
         except:
             return JsonResponse({'result':'invalid'})
 
-        if(not ('chat_id' in keys)):
+        if(not ('chat' in keys)):
             return JsonResponse({'result':'invalid keys'})
         else:
-            item = Mensaje.objects.filter(chat = json_request['chat_id']) # filtrar si el like asociado es del comprador que se pide
+            item = Mensaje.objects.filter(chat = json_request['chat']) # filtrar si el like asociado es del comprador que se pide
             serializer = MensajeSerializer(item, many = True)
             data_mensajes = json.loads(json.dumps(serializer.data))
     
